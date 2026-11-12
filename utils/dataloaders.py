@@ -268,7 +268,7 @@ class LoadImages:
     def __init__(self, path, img_size=640, stride=32, auto=True, transforms=None, vid_stride=1):
         """Initializes YOLOv5 loader for images/videos, supporting glob patterns, directories, and lists of paths."""
         if isinstance(path, str) and Path(path).suffix == ".txt":  # *.txt file with img/vid/dir on each line
-            path = Path(path).read_text().strip().splitlines()
+            path = Path(path).read_text(encoding="utf-8").strip().splitlines()
         files = []
         for p in sorted(path) if isinstance(path, (list, tuple)) else [path]:
             p = str(Path(p).resolve())
@@ -383,7 +383,9 @@ class LoadStreams:
         self.img_size = img_size
         self.stride = stride
         self.vid_stride = vid_stride  # video frame-rate stride
-        sources = Path(sources).read_text().strip().splitlines() if os.path.isfile(sources) else [sources]
+        sources = (
+            Path(sources).read_text(encoding="utf-8").strip().splitlines() if os.path.isfile(sources) else [sources]
+        )
         n = len(sources)
         self.sources = [clean_str(x) for x in sources]  # clean source names for later
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
@@ -510,7 +512,7 @@ class LoadImagesAndLabels(Dataset):
                     f += glob.glob(str(Path(glob.escape(str(p))) / "**" / "*.*"), recursive=True)
                     # f = list(p.rglob('*.*'))  # pathlib
                 elif p.is_file():  # file
-                    with open(p) as t:
+                    with open(p, encoding="utf-8") as t:
                         t = t.read().strip().splitlines()
                         parent = str(p.parent) + os.sep
                         f += [x.replace("./", parent, 1) if x.startswith("./") else x for x in t]  # to global path
